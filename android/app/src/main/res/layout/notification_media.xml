@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/notification_background"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/notification_artwork"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/notification_action_play"
+            android:src="@drawable/ic_notification" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:id="@+id/notification_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="@color/notification_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:text="@string/notification_unknown_title" />
+
+            <TextView
+                android:id="@+id/notification_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginTop="3dp"
+                android:textColor="@color/notification_text_secondary"
+                android:textSize="13sp"
+                android:text="@string/notification_unknown_artist" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/notification_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="6dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notification_action_close"
+            android:src="@drawable/ic_close"
+            android:tint="@color/notification_close_tint" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/notification_favorite"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notification_action_favorite"
+            android:src="@drawable/ic_heart_outline"
+            android:tint="@color/notification_icon_tint" />
+
+        <ImageButton
+            android:id="@+id/notification_previous"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notification_action_previous"
+            android:src="@drawable/ic_skip_previous"
+            android:tint="@color/notification_icon_tint" />
+
+        <ImageButton
+            android:id="@+id/notification_play_pause"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notification_action_play"
+            android:src="@drawable/ic_play"
+            android:tint="@color/notification_icon_tint" />
+
+        <ImageButton
+            android:id="@+id/notification_next"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/notification_action_next"
+            android:src="@drawable/ic_skip_next"
+            android:tint="@color/notification_icon_tint" />
+    </LinearLayout>
+</LinearLayout>

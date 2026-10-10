@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name">Reproducción</string>
+    <string name="notification_channel_description">Controles de reproducción de música</string>
+    <string name="notification_action_previous">Anterior</string>
+    <string name="notification_action_play">Reproducir</string>
+    <string name="notification_action_pause">Pausar</string>
+    <string name="notification_action_next">Siguiente</string>
+    <string name="notification_action_favorite">Favorito</string>
+    <string name="notification_action_close">Cerrar</string>
+    <string name="notification_unknown_title">Desconocido</string>
+    <string name="notification_unknown_artist">Artista desconocido</string>
+</resources>
