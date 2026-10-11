@@ -24,5 +24,5 @@ void main() {
 
   Log.app('Iniciando offline_music en modo visual preliminar');
 
-  runApp(const OfflineMusicApp());
+   runApp(const App());
 }

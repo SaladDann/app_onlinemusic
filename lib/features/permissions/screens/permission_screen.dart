@@ -8,7 +8,6 @@ import 'package:offline_music/features/dashboard/controllers/dashboard_controlle
 import 'package:offline_music/features/dashboard/screens/dashboard_screen.dart';
 import '../controllers/access_controller.dart';
 
-
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({
     super.key,
@@ -44,10 +43,15 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
     if (!mounted || !success) return;
 
+    // Obtenemos el conteo real de pistas escaneadas por el controlador de acceso
+    final scannedCount = _controller.scannedCount;
+
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => DashboardScreen(
           dashboardController: widget.dashboardController,
+          scannedSongsCount: scannedCount,
+          decoderStatus: true,
         ),
       ),
     );
