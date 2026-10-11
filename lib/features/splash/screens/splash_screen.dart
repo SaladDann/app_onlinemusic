@@ -1,10 +1,12 @@
-// lib/features/splash/screens/splash_screen.dart
+// lib/features/splash/screens/splash_screen.dartimport 'dart:async';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:offline_music/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:offline_music/features/dashboard/screens/dashboard_screen.dart';
+import 'package:offline_music/features/permissions/screens/permission_screen.dart';
 import '../../../../core/log.dart';
 import '../controllers/splash_controller.dart';
-import 'diagnostic_preview_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,21 +44,37 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    Log.splash('Splash visual iniciado con diagnóstico real');
+    Log.splash('Splash visual iniciado con control de persistencia');
     unawaited(_runStartupSequence());
   }
 
   Future<void> _runStartupSequence() async {
-    // Ejecutamos el diagnóstico real a través del controlador
+    // Evaluamos si ya existen permisos y datos en caché
     final diagnosticResult = await _controller.initializeApp();
     if (!mounted) return;
 
-    // Navegamos hacia la pantalla
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => DiagnosticPreviewScreen(result: diagnosticResult),
-      ),
-    );
+    // Dependiendo del resultado, decidimos a dónde navegar
+    if (diagnosticResult.destination == StartupDestination.dashboard) {
+      Log.splash('Redirigiendo directamente al Dashboard (Permisos ya concedidos).');
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => DashboardScreen(
+            dashboardController: DashboardController(),
+            scannedSongsCount: diagnosticResult.scannedSongsCount,
+            decoderStatus: diagnosticResult.decoderAvailable,
+          ),
+        ),
+      );
+    } else {
+      Log.splash('Redirigiendo a la pantalla de Permisos.');
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => PermissionScreen(
+            dashboardController: DashboardController(),
+          ),
+        ),
+      );
+    }
   }
 
   @override

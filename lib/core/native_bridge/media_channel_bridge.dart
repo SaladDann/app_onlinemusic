@@ -13,19 +13,19 @@ class MediaChannelBridge {
   /// Comprueba mediante MediaCodec si el dispositivo soporta el decoder del archivo
   Future<bool> isDecoderAvailable(String path) async {
     try {
-      Log.native('Verificando decoder nativo para el archivo: $path');
-      final result = await _channel.invokeMethod<bool>(
+      final result = await _channel.invokeMethod<dynamic>(
         'isAudioDecoderAvailable',
-        {'path': path},
+        <String, dynamic>{'path': path},
       );
-      final isAvailable = result ?? false;
-      Log.format('Decoder disponible para $path: $isAvailable');
-      return isAvailable;
-    } catch (e, stackTrace) {
-      Log.error('Native', 'Error al comprobar decoder nativo para $path', e);
-      if (kDebugMode) {
-        debugPrintStack(stackTrace: stackTrace);
+
+      if (result is bool) return result;
+      if (result is Map) {
+        final available = result['available'] ?? result['isAvailable'];
+        if (available is bool) return available;
       }
+      return false;
+    } catch (e) {
+      Log.native('Error al comprobar decoder nativo para $path: $e');
       return false;
     }
   }
