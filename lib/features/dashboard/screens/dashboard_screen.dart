@@ -40,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late final DashboardController _controller;
   late AppearanceController _appearanceController;
 
-  static const ArtworkService _artworkService = ArtworkService();
+  static final ArtworkService _artworkService = ArtworkService();
 
   String? _artworkPath;
   String? _requestedArtworkSongId;

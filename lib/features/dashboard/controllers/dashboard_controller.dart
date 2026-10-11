@@ -1,97 +1,106 @@
 // lib/features/dashboard/controllers/dashboard_controller.dart
-import 'dart:async';
+// lib/features/dashboard/controllers/dashboard_controller.dart
 import 'package:flutter/foundation.dart';
+import 'package:offline_music/features/dashboard/controllers/library_controller.dart';
 import '../../../core/log.dart';
 import '../../../data/play_mode.dart';
 import '../../../data/song.dart';
 
+import 'playback_controller.dart';
+
 class DashboardController extends ChangeNotifier {
-  DashboardController() {
-    Log.library('DashboardController inicializado en modo base (coraza)');
+  DashboardController({
+    required LibraryController libraryController,
+    PlaybackController? playbackController,
+  })  : _library = libraryController,
+        _playback = playbackController ?? PlaybackController() {
+    _library.addListener(_onLibraryOrPlaybackChanged);
+    _playback.addListener(_onLibraryOrPlaybackChanged);
+    Log.library('[DashboardController] Inicializado como orquestador modular.');
   }
 
-  // Estados simulados / base para la interfaz
-  Song? _currentSong;
-  bool _isLoading = false;
-  bool _isPlaying = false;
-  Duration _position = Duration.zero;
-  final Duration _duration = const Duration(minutes: 3, seconds: 30);
-  PlayMode _playMode = PlayMode.order;
-  bool _isFavorite = false;
+  final LibraryController _library;
+  final PlaybackController _playback;
 
-  // Getters requeridos por la vista del Dashboard
-  Song? get currentSong => _currentSong;
-  bool get isLoading => _isLoading;
-  bool get isPlaying => _isPlaying;
-  Duration get position => _position;
-  Duration get duration => _duration;
-  PlayMode get playMode => _playMode;
-  bool get isFavorite => _isFavorite;
+  // Delegaciones hacia los controladores especializados
+  List<Song> get songs => _library.songs;
+  bool get isLoading => _library.isLoading;
 
-  // Método de inicialización base
+  Song? get currentSong => _playback.currentSong ?? (_library.songs.isNotEmpty ? _library.songs.first : null);
+  bool get isPlaying => _playback.isPlaying;
+  Duration get position => _playback.position;
+  Duration get duration => _playback.duration;
+  PlayMode get playMode => _playback.playMode;
+  bool get isFavorite => false; // Se conectará con FavoritesController próximamente
+
+  /// Inicializa la biblioteca y prepara la cola de audio de forma real
   Future<void> initialize() async {
-    Log.library('[DashboardController] Inicializando controlador base...');
-    _isLoading = true;
-    notifyListeners();
+    Log.library('[DashboardController] Inicializando datos desde la biblioteca...');
+    await _library.loadSongs();
 
-    // Simulamos una carga rápida o inicialización de la coraza
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-
-    _isLoading = false;
-    Log.library('[DashboardController] Inicialización base completada.');
+    if (_library.songs.isNotEmpty) {
+      await _playback.preparePlaylist(_library.songs, 0);
+    }
     notifyListeners();
   }
 
-  // Acciones de reproducción (preparadas con logs)
+  void _onLibraryOrPlaybackChanged() {
+    notifyListeners();
+  }
+
+  // --- Acciones de Botones Reales ---
+
   Future<void> onPlayPressed() async {
-    _isPlaying = !_isPlaying;
-    Log.playback('[DashboardController] Acción Play/Pause presionada. Estado isPlaying: $_isPlaying');
-    notifyListeners();
-  }
-
-  Future<void> seek(Duration position) async {
-    _position = position;
-    Log.playback('[DashboardController] Seek aplicado a: ${position.inSeconds}s');
-    notifyListeners();
-  }
-
-  void onFavoritePressed() {
-    _isFavorite = !_isFavorite;
-    Log.library('[DashboardController] Favorito cambiado: $_isFavorite');
-    notifyListeners();
-  }
-
-  void cyclePlayMode() {
-    _playMode = _playMode.next;
-    Log.library('[DashboardController] Ciclando modo de reproducción a: ${_playMode.label}');
-    notifyListeners();
-  }
-
-  Future<void> onPreviousPressed() async {
-    Log.playback('[DashboardController] Acción Pista Anterior invocada');
+    Log.playback('[Dashboard] Tap en Play/Pause');
+    await _playback.togglePlayPause(_library.songs);
   }
 
   Future<void> onNextPressed() async {
-    Log.playback('[DashboardController] Acción Pista Siguiente invocada');
+    Log.playback('[Dashboard] Tap en Pista Siguiente');
+    await _playback.skipToNext();
+  }
+
+  Future<void> onPreviousPressed() async {
+    Log.playback('[Dashboard] Tap en Pista Anterior');
+    await _playback.skipToPrevious();
+  }
+
+  Future<void> seek(Duration position) async {
+    Log.playback('[Dashboard] Tap en Barra de Progreso (Seek): ${position.inSeconds}s');
+    await _playback.seek(position);
+  }
+
+  void cyclePlayMode() {
+    Log.library('[Dashboard] Tap en Modo de Reproducción');
+    _playback.cyclePlayMode();
+  }
+
+  void onFavoritePressed() {
+    Log.library('[Dashboard] Tap en Favorito');
+    // Se delegará al módulo de favoritos
   }
 
   void startRewind() {
-    Log.playback('[DashboardController] Inicio de retroceso rápido (Rewind)');
+    Log.playback('[Dashboard] Inicio de retroceso rápido');
   }
 
   void stopRewind() {
-    Log.playback('[DashboardController] Fin de retroceso rápido (Rewind)');
+    Log.playback('[Dashboard] Fin de retroceso rápido');
   }
 
   void startFastForward() {
-    Log.playback('[DashboardController] Inicio de avance rápido (FastForward)');
+    Log.playback('[Dashboard] Inicio de avance rápido');
   }
 
   void stopFastForward() {
-    Log.playback('[DashboardController] Fin de avance rápido (FastForward)');
+    Log.playback('[Dashboard] Fin de avance rápido');
   }
 
-  void refreshState() {
-    notifyListeners();
+  @override
+  void dispose() {
+    _library.removeListener(_onLibraryOrPlaybackChanged);
+    _playback.removeListener(_onLibraryOrPlaybackChanged);
+    _playback.dispose();
+    super.dispose();
   }
 }

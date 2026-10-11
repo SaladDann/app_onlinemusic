@@ -1,10 +1,14 @@
-// lib/features/splash/screens/splash_screen.dartimport 'dart:async';
+// lib/features/splash/screens/splash_screen.dart
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:offline_music/data/library_repository.dart';
 import 'package:offline_music/features/dashboard/controllers/dashboard_controller.dart';
+import 'package:offline_music/features/dashboard/controllers/library_controller.dart';
 import 'package:offline_music/features/dashboard/screens/dashboard_screen.dart';
 import 'package:offline_music/features/permissions/screens/permission_screen.dart';
+
 import '../../../../core/log.dart';
 import '../controllers/splash_controller.dart';
 
@@ -53,13 +57,31 @@ class _SplashScreenState extends State<SplashScreen>
     final diagnosticResult = await _controller.initializeApp();
     if (!mounted) return;
 
+    // Instanciamos los repositorios y el LibraryController requerido por el DashboardController
+    final localRepo = LocalLibraryRepository();
+    const driveRepo = DriveLibraryRepository();
+    final fusionRepo = FusionLibraryRepository(
+      localRepository: localRepo,
+      driveRepository: driveRepo,
+    );
+
+    final libraryController = LibraryController(
+      localRepository: localRepo,
+      driveRepository: driveRepo,
+      fusionRepository: fusionRepo,
+    );
+
+    final dashboardController = DashboardController(
+      libraryController: libraryController,
+    );
+
     // Dependiendo del resultado, decidimos a dónde navegar
     if (diagnosticResult.destination == StartupDestination.dashboard) {
       Log.splash('Redirigiendo directamente al Dashboard (Permisos ya concedidos).');
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
           builder: (_) => DashboardScreen(
-            dashboardController: DashboardController(),
+            dashboardController: dashboardController,
             scannedSongsCount: diagnosticResult.scannedSongsCount,
             decoderStatus: diagnosticResult.decoderAvailable,
           ),
@@ -70,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen>
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
           builder: (_) => PermissionScreen(
-            dashboardController: DashboardController(),
+            dashboardController: dashboardController,
           ),
         ),
       );
