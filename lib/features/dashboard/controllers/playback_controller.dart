@@ -21,6 +21,7 @@ class PlaybackController extends ChangeNotifier {
   Duration _duration = Duration.zero;
   PlayMode _playMode = PlayMode.order;
   bool _isQueuePrepared = false;
+  bool _isDisposed = false;
 
   StreamSubscription<PlayerStateEnum>? _playerStateSub;
   StreamSubscription<Duration>? _positionSub;
@@ -36,35 +37,35 @@ class PlaybackController extends ChangeNotifier {
   void _listenToPlayer() {
     _playerStateSub = _audio.playerStateStream.listen((state) {
       _isPlaying = state == PlayerStateEnum.playing;
-      notifyListeners();
+      _notify();
     });
 
     _positionSub = _audio.positionStream.listen((pos) {
       _position = pos;
-      notifyListeners();
+      _notify();
     });
 
     _durationSub = _audio.durationStream.listen((dur) {
       _duration = dur ?? Duration.zero;
-      notifyListeners();
+      _notify();
     });
 
     _currentSongSub = _audio.currentSongStream.listen((song) {
       _currentSong = song;
       Log.playback('[PlaybackController] Pista actual cambiada: ${song?.title}');
-      notifyListeners();
+      _notify();
     });
   }
 
   Future<void> preparePlaylist(List<Song> songs, int initialIndex) async {
-    if (songs.isEmpty) return;
+    if (songs.isEmpty || _isDisposed) return;
     Log.playback('[PlaybackController] Preparando cola: ${songs.length} pistas');
     await _audio.setPlaylist(songs, initialIndex: initialIndex);
     _isQueuePrepared = true;
   }
 
   Future<void> togglePlayPause(List<Song> songs) async {
-    if (songs.isEmpty) return;
+    if (songs.isEmpty || _isDisposed) return;
 
     if (_isPlaying) {
       Log.playback('[PlaybackController] Pausando reproducción');
@@ -79,30 +80,45 @@ class PlaybackController extends ChangeNotifier {
   }
 
   Future<void> skipToNext() async {
+    if (_isDisposed) return;
     Log.playback('[PlaybackController] Saltando a pista siguiente');
     await _audio.skipToNext();
   }
 
   Future<void> skipToPrevious() async {
+    if (_isDisposed) return;
     Log.playback('[PlaybackController] Saltando a pista anterior');
     await _audio.skipToPrevious();
   }
 
   Future<void> seek(Duration position) async {
+    if (_isDisposed) return;
     _position = position;
-    notifyListeners();
-    await _audio.seek(position);
+    _notify();
+    try {
+      await _audio.seek(position);
+    } catch (e) {
+      Log.playback('[PlaybackController] Error en seek: $e');
+    }
   }
 
   void cyclePlayMode() {
+    if (_isDisposed) return;
     _playMode = _playMode.next;
-    Log.playback('[PlaybackController] Modo cambiado a: ${_playMode.label}');
     _audio.setPlayMode(_playMode);
-    notifyListeners();
+    Log.playback('[PlaybackController] Modo de reproducción cambiado a: ${_playMode.label}');
+    _notify();
+  }
+
+  void _notify() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _playerStateSub?.cancel();
     _positionSub?.cancel();
     _durationSub?.cancel();

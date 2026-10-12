@@ -1,11 +1,10 @@
 // lib/features/dashboard/controllers/dashboard_controller.dart
-// lib/features/dashboard/controllers/dashboard_controller.dart
 import 'package:flutter/foundation.dart';
-import 'package:offline_music/features/dashboard/controllers/library_controller.dart';
+
 import '../../../core/log.dart';
 import '../../../data/play_mode.dart';
 import '../../../data/song.dart';
-
+import 'library_controller.dart';
 import 'playback_controller.dart';
 
 class DashboardController extends ChangeNotifier {
@@ -77,7 +76,6 @@ class DashboardController extends ChangeNotifier {
 
   void onFavoritePressed() {
     Log.library('[Dashboard] Tap en Favorito');
-    // Se delegará al módulo de favoritos
   }
 
   void startRewind() {
